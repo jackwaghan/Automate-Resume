@@ -16,7 +16,7 @@ jobs:
       # 2. Restore the cached TexLive Docker image tarball.
       - name: Restore TexLive Docker image cache
         id: docker-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         with:
           path: texlive_image.tar
           key: ${{ runner.os }}-texlive-image
@@ -65,7 +65,7 @@ jobs:
       # 8. (Optional) Upload the Docker image tarball as an artifact.
       - name: Upload Docker image as artifact (optional)
         if: steps.docker-cache.outputs.cache-hit != 'true'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: texlive-docker-image
           path: texlive_image.tar
