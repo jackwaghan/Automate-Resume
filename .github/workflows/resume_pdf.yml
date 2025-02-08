@@ -9,7 +9,7 @@ jobs:
   build_pdf:
     runs-on: ubuntu-latest
     container:
-      image: blang/latex:ctanfull
+      image: danteev/texlive:latest
 
     steps:
       - name: Checkout Repository
@@ -20,7 +20,7 @@ jobs:
           cd Template  # Move into the correct directory
           latexmk -pdf -interaction=nonstopmode Resume.tex
 
-      - name: Move PDF to Root (Optional)
+      - name: Move PDF to Root
         run: mv Template/Resume.pdf Resume.pdf
 
       - name: Commit and Push PDF if Changed
