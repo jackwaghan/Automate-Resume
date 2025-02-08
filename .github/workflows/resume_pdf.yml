@@ -1,0 +1,35 @@
+name: Generate PDF on Commit
+
+on:
+  push:
+    branches:
+      - main # or your primary branch
+
+jobs:
+  build_pdf:
+    runs-on: ubuntu-latest
+    # Use a container image with TeX Live pre-installed.
+    container:
+      image: blang/latex:ctanfull
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Compile LaTeX to PDF
+        run: |
+          # Use latexmk for automated compilation
+          latexmk -pdf -interaction=nonstopmode Template/Resume.tex
+
+      - name: Commit and Push PDF if Changed
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          # Check if there are any changes (i.e. main.pdf updated)
+          if [ -n "$(git status --porcelain)" ]; then
+            git add main.pdf
+            git commit -m "Automated PDF generation [skip ci]"
+            git push
+          else
+            echo "No changes to commit."
+          fi
