@@ -16,7 +16,7 @@ jobs:
       # 2. Restore the cached TexLive Docker image tarball.
       - name: Restore TexLive Docker image cache
         id: docker-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: texlive_image.tar
           key: ${{ runner.os }}-texlive-image
