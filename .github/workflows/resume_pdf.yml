@@ -8,28 +8,52 @@ on:
 jobs:
   build_pdf:
     runs-on: ubuntu-latest
-    container:
-      image: danteev/texlive:latest
-
     steps:
+      # 1. Checkout the repository.
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Ensure full history is available for pushing changes
 
+      # 2. Restore the cached TexLive Docker image tarball.
+      - name: Restore TexLive Docker image cache
+        id: docker-cache
+        uses: actions/cache@v3
+        with:
+          path: texlive_image.tar
+          key: ${{ runner.os }}-texlive-image
+
+      # 3. If the tarball was found, load the image.
+      - name: Load TexLive Docker image from cache if available
+        if: steps.docker-cache.outputs.cache-hit == 'true'
+        run: docker load -i texlive_image.tar
+
+      # 4. If not cached, pull the image from the internet, save it, and load it.
+      - name: Pull TexLive Docker image if not cached
+        if: steps.docker-cache.outputs.cache-hit != 'true'
+        run: |
+          docker pull danteev/texlive:latest
+          docker save danteev/texlive:latest -o texlive_image.tar
+          docker load -i texlive_image.tar
+
+      # 5. Use the Docker image to compile your LaTeX source.
       - name: Compile LaTeX to PDF
         run: |
-          cd Template  # Change directory to where the LaTeX source lives
-          latexmk -pdf -interaction=nonstopmode Resume.tex
+          docker run --rm \
+            -v "${{ github.workspace }}:/workspace" \
+            -w /workspace/Template \
+            danteev/texlive:latest \
+            latexmk -pdf -interaction=nonstopmode Resume.tex
 
+      # 6. Move the generated PDF from the Template folder to the repository root.
       - name: Move PDF to Root
         run: mv Template/Resume.pdf Resume.pdf
 
+      # 7. Commit and push the PDF if it changed.
       - name: Commit and Push PDF if Changed
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          # Check if Resume.pdf has changes
+          # Mark the repository as safe
+          git config --global --add safe.directory "${{ github.workspace }}"
           if [ -n "$(git status --porcelain Resume.pdf)" ]; then
             git add Resume.pdf
             git commit -m "Automated PDF generation [skip ci]"
@@ -37,3 +61,11 @@ jobs:
           else
             echo "No changes to commit."
           fi
+
+      # 8. (Optional) Upload the Docker image tarball as an artifact.
+      - name: Upload Docker image as artifact (optional)
+        if: steps.docker-cache.outputs.cache-hit != 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: texlive-docker-image
+          path: texlive_image.tar
