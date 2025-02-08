@@ -61,11 +61,3 @@ jobs:
           else
             echo "No changes to commit."
           fi
-
-      # 8. (Optional) Upload the Docker image tarball as an artifact.
-      - name: Upload Docker image as artifact (optional)
-        if: steps.docker-cache.outputs.cache-hit != 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: texlive-docker-image
-          path: texlive_image.tar
