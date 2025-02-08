@@ -14,26 +14,26 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Ensure full history is available for pushing changes
 
       - name: Compile LaTeX to PDF
         run: |
-          cd Template  # Move into the correct directory
+          cd Template  # Change directory to where the LaTeX source lives
           latexmk -pdf -interaction=nonstopmode Resume.tex
 
       - name: Move PDF to Root
         run: mv Template/Resume.pdf Resume.pdf
 
-      - name: Fix Git Safe Directory Issue
-        run: git config --global --add safe.directory /__w/Resume/Resume
-
       - name: Commit and Push PDF if Changed
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git add Resume.pdf
-          git commit -m "Automated PDF generation"
-          git push
-
-        env:
-          GIT_AUTHOR_DATE: "$(date)"
-          GIT_COMMITTER_DATE: "$(date)"
+          # Check if Resume.pdf has changes
+          if [ -n "$(git status --porcelain Resume.pdf)" ]; then
+            git add Resume.pdf
+            git commit -m "Automated PDF generation [skip ci]"
+            git push
+          else
+            echo "No changes to commit."
+          fi
