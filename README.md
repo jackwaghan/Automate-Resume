@@ -19,17 +19,22 @@ This repository generates a `Resume.pdf` from a `Resume.tex` file using `pdflate
     git clone https://github.com/jackwaghan/Resume.git
     ```
 2. Navigate to the repository directory:
+   
     ```sh
     cd Resume
     ```
-3. Edit the `Resume.tex` file with your preferred LaTeX editor.
-4. Commit your changes:
+    
+4. Edit the `Resume.tex` file with your preferred LaTeX editor.
+
+5. Commit your changes:
+
     ```sh
     git add Resume.tex
     git commit -m "Update resume"
     git push origin main
     ```
-5. The `Resume.pdf` will be generated automatically.
+
+6. The `Resume.pdf` will be generated automatically.
 
 ## License
 
